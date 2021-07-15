@@ -35,11 +35,10 @@ target_link_libraries(tangram
   curl
   pthread
   rt
-  /opt/vc/lib/libbcm_host.so
-  /opt/vc/lib/libbrcmEGL.so
-  /opt/vc/lib/libbrcmGLESv2.so
-  /opt/vc/lib/libvchiq_arm.so
-  /opt/vc/lib/libvcos.so
+  GLESv2
+  GLESv1_CM
+  EGL
+  glapi
 )
 
 target_compile_options(tangram

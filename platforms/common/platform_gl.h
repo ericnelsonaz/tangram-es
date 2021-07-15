@@ -46,8 +46,8 @@ extern PFNGLGENVERTEXARRAYSOESPROC glGenVertexArraysOESEXT;
 #endif // TANGRAM_LINUX
 
 #ifdef TANGRAM_RPI
-// Broadcom library for direct GPU access
-#include "bcm_host.h"
+#include <unistd.h>
+#include <string.h>
 
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
@@ -58,6 +58,9 @@ extern PFNGLGENVERTEXARRAYSOESPROC glGenVertexArraysOESEXT;
 static void glBindVertexArray(GLuint array) {}
 static void glDeleteVertexArrays(GLsizei n, const GLuint *arrays) {}
 static void glGenVertexArrays(GLsizei n, GLuint *arrays) {}
+inline void * glMapBufferOES(GLenum target, GLenum access) {return 0;}
+inline GLboolean glUnmapBufferOES(GLenum target) { return 0; }
+
 
 #endif // TANGRAM_RPI
 
