@@ -137,7 +137,7 @@ int main(int argc, char **argv) {
     }
 
     // Resolve the scene file URL against the current directory.
-    Url baseUrl("file:///");
+    Url baseUrl("file:///home/root/");
     char pathBuffer[PATH_MAX] = {0};
     if (getcwd(pathBuffer, PATH_MAX) != nullptr) {
         baseUrl = Url(std::string(pathBuffer) + "/").resolve(baseUrl);
@@ -145,7 +145,9 @@ int main(int argc, char **argv) {
 
     LOG("Base URL: %s", baseUrl.string().c_str());
 
-    Url sceneUrl = Url(options.sceneFilePath).resolve(baseUrl);
+    Url sceneUrl = baseUrl.resolve(Url(options.sceneFilePath));
+
+    LOG("Scene URL: %s", sceneUrl.string().c_str());
 
     map = std::make_unique<Map>(std::make_unique<RpiPlatform>(urlClientOptions));
     map->loadScene(sceneUrl.string(), !options.hasLocationSet, updates);

@@ -187,6 +187,7 @@ void Importer::addSceneYaml(const Url& sceneUrl, const char* sceneYaml, size_t l
 
     auto& sceneNode = m_sceneNodes[sceneUrl];
 
+	LOGE("Scene data: %s", sceneYaml);
     try {
         sceneNode.yaml = YAML::Load(sceneYaml, length);
     } catch (const YAML::ParserException& e) {
