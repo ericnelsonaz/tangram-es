@@ -22,6 +22,7 @@ class RenderTexture : public Texture {
 public:
     RenderTexture(int width, int height)
         : Texture(textureOptions()) {
+	printf("%s: resize to %dx%d\n", __func__, width, height);
         resize(width, height);
     }
     GLuint glHandle() const { return m_glHandle; }

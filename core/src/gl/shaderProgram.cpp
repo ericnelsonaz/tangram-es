@@ -89,20 +89,20 @@ bool ShaderProgram::build(RenderState& rs) {
     // Compile vertex and fragment shaders
     GLint vertexShader = makeCompiledShader(rs, vertSrc, GL_VERTEX_SHADER);
     if (vertexShader == 0) {
-        LOGE("Shader compilation failed for %s", m_description.c_str());
+        LOGE("Shader compilation failed for %s", vertSrc.c_str());
         return false;
     }
 
     GLint fragmentShader = makeCompiledShader(rs, fragSrc, GL_FRAGMENT_SHADER);
     if (fragmentShader == 0) {
-        LOGE("Shader compilation failed for %s", m_description.c_str());
+        LOGE("Shader compilation failed for %s", fragSrc.c_str());
         return false;
     }
 
     // Link shaders into a program
     GLint program = makeLinkedShaderProgram(fragmentShader, vertexShader);
     if (program == 0) {
-        LOGE("Shader compilation failed for %s", m_description.c_str());
+        LOGE("Shader compilation failed for %s/%s", vertSrc.c_str(), fragSrc.c_str());
         return false;
     }
 
@@ -147,14 +147,18 @@ GLuint ShaderProgram::makeLinkedShaderProgram(GLint _fragShader, GLint _vertShad
 
 GLuint ShaderProgram::makeCompiledShader(RenderState& rs, const std::string& _src, GLenum _type) {
 
+    printf("%s\n", __func__);
     auto& cache = (_type == GL_VERTEX_SHADER) ? rs.vertexShaders : rs.fragmentShaders;
 
     auto entry = cache.emplace(_src, 0);
     if (!entry.second) {
+	printf("%s: found matching shader in cache\n", __func__);
         return entry.first->second;
     }
 
     GLuint shader = GL::createShader(_type);
+
+    printf("%s: created shader %d\n", __func__, shader);
 
     const GLchar* source = (const GLchar*) _src.c_str();
     GL::shaderSource(shader, 1, &source, NULL);
@@ -164,6 +168,7 @@ GLuint ShaderProgram::makeCompiledShader(RenderState& rs, const std::string& _sr
     GL::getShaderiv(shader, GL_COMPILE_STATUS, &isCompiled);
 
     if (isCompiled == GL_FALSE) {
+	    printf("not compiled\n");
         GLint infoLength = 0;
         GL::getShaderiv(shader, GL_INFO_LOG_LENGTH, &infoLength);
 
@@ -205,6 +210,8 @@ GLuint ShaderProgram::makeCompiledShader(RenderState& rs, const std::string& _sr
 
         GL::deleteShader(shader);
         return 0;
+    } else {
+	    printf("shader compiled okay, returning %d\n", shader);
     }
 
     entry.first->second = shader;

@@ -86,11 +86,13 @@ void GL::deleteShader(GLuint shader) {
 }
 GLuint GL::createShader(GLenum type) {
     auto result = glCreateShader(type);
+    printf("%s: create shader of type %d, return %d\n", __func__, type, result);
     GL_CHECK();
     return result;
 }
 GLuint GL::createProgram() {
     auto result = glCreateProgram();
+    printf("%s: result %d\n", __func__, result);
     GL_CHECK();
     return result;
 }

@@ -58,6 +58,7 @@ bool Texture::loadImageFromMemory(const uint8_t* data, size_t length) {
     }
     m_bufferSize = width * height * bpp();
 
+    printf("%s: resize to %dx%d\n", __func__, width, height);
     resize(width, height);
 
     LOGT("Decoded image data: %dx%d bpp:%d/%d",
@@ -90,6 +91,7 @@ bool Texture::setPixelData(int _width, int _height, int _bytesPerPixel,
 
     m_bufferSize = _length;
 
+    printf("%s: resize to %dx%d\n", __func__, _width, _height);
     resize(_width, _height);
 
     return true;
@@ -164,6 +166,7 @@ void Texture::resize(int width, int height) {
     m_width = width;
     m_height = height;
 
+    printf("%s: resize to %dx%d\n", __func__, width, height);
     if (!(Hardware::supportsTextureNPOT) &&
         !(isPowerOfTwo(m_width) && isPowerOfTwo(m_height)) &&
         (m_options.generateMipmaps || (m_options.wrapS == TextureWrap::REPEAT ||
