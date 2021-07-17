@@ -12,6 +12,9 @@
 #include <iostream>
 
 #include <fcntl.h>
+#include <linux/fb.h>
+#include <sys/ioctl.h>
+#include <sys/mman.h>
 #include <sys/time.h>
 #include <sys/shm.h>
 #include <termios.h>
@@ -98,6 +101,8 @@ struct Timer {
     }
 };
 
+static char const FBDEV[] = "/dev/fb0";
+
 int main(int argc, char **argv) {
 
     printf("Starting an interactive map window. Use keys to navigate:\n"
@@ -164,6 +169,31 @@ int main(int argc, char **argv) {
     // Start clock
     Timer timer;
 
+    int fb = open(FBDEV, O_RDWR);
+    if ( 0 > fb ) {
+        fprintf(stderr, "%s:%m", FBDEV);
+        return errno;
+    }
+
+    fcntl(fb, F_SETFD, FD_CLOEXEC );
+
+    struct fb_fix_screeninfo fixed_info;
+    int err = ioctl(fb, FBIOGET_FSCREENINFO, &fixed_info);
+    if (err) {
+        perror("FBIOGET_FSCREENINFO");
+        return err;
+    }
+
+    printf("%u bytes of framebuffer\n", fixed_info.smem_len);
+
+    unsigned char *fbmem = (unsigned char *)
+                            mmap(0, fixed_info.smem_len,
+                                 PROT_READ|PROT_WRITE, MAP_SHARED, fb, 0);
+    if (MAP_FAILED == fbmem) {
+        perror("mmap(fb)");
+        return -1;
+    }
+
     while (bUpdate) {
         pollInput();
         double dt = timer.deltaSeconds();
@@ -171,9 +201,11 @@ int main(int argc, char **argv) {
             setRenderRequest(false);
             map->update(dt);
             map->render();
-            swapSurface();
+            swapSurface(fbmem);
         }
     }
+
+    close(fb);
 
     if (map) {
         map = nullptr;

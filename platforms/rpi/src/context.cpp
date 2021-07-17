@@ -22,8 +22,8 @@ EGLContext context;
 struct Viewport {
     int x = 0;
     int y = 0;
-    int width = 320;
-    int height = 240;
+    int width = 240;
+    int height = 320;
 };
 Viewport viewport;
 
@@ -372,8 +372,8 @@ void createSurface(int x, int y, int width, int height) {
 	// Set viewport size.
 	viewport.x = x;
 	viewport.y = y;
-	viewport.width = 320;
-	viewport.height = 240;
+	viewport.width = 240;
+	viewport.height = 320;
 
 	surface = eglCreatePbufferSurface(display, config, surface_attributes);
 // 	surface = eglCreateWindowSurface(display, config, 0, NULL);
@@ -396,8 +396,8 @@ void createSurface(int x, int y, int width, int height) {
 	initMouse();
 }
 
-void swapSurface() {
-        printf("%s\n", __func__);
+void swapSurface(unsigned char *fb) {
+    printf("%s\n", __func__);
 
 	EGLint value;
  	GLsizei width;
@@ -435,17 +435,13 @@ void swapSurface() {
 	}
 
 	unsigned const num_bytes = 320*240*4;
-	unsigned char *data = new unsigned char [320*240*4];
-	memset(data, 0, num_bytes);
-        glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, data);
+	glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, fb);
  
 	FILE *fout = fopen("pixels.rgba", "wb");
-	fwrite(data, 1, 320*240*4, fout);
+	fwrite(fb, 1, 320*240*4, fout);
 	fclose(fout);
 
 	eglSwapBuffers(display, surface);
-
-	delete [] data;
 }
 
 void destroySurface() {
@@ -503,11 +499,11 @@ void setWindowSize(int _width, int _height) {
 }
 
 int getWindowWidth(){
-	return 320;
+	return 240;
 }
 
 int getWindowHeight(){
-	return 240;
+	return 320;
 }
 
 float getMouseX(){

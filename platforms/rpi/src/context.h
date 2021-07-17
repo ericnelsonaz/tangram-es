@@ -5,7 +5,7 @@
 // GL Context
 void createSurface(int x, int y, int width, int height);
 void pollInput();
-void swapSurface();
+void swapSurface(unsigned char *fb);
 void destroySurface();
 
 // SET
