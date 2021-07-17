@@ -47,6 +47,8 @@ void printAvailableExtensions() {
 void loadExtensions() {
     s_glExtensions = (char*) GL::getString(GL_EXTENSIONS);
 
+printf("%s: %s\n", __func__, s_glExtensions);
+
     if (s_glExtensions == NULL) {
         LOGE("glGetString( GL_EXTENSIONS ) returned NULL");
         return;

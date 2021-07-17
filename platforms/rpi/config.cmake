@@ -39,6 +39,7 @@ target_link_libraries(tangram
   GLESv1_CM
   EGL
   glapi
+  OSMesa
 )
 
 target_compile_options(tangram

@@ -400,21 +400,52 @@ void swapSurface() {
         printf("%s\n", __func__);
 
 	EGLint value;
+ 	GLsizei width;
+ 	GLsizei height;
 
 	if (EGL_TRUE == eglQuerySurface(display, surface, EGL_WIDTH, &value)) {
 		printf("width %d\n", value);
+		width = value;
 	} else {
 		printf("error 0x%x querying width for display %p, surface %p\n",
 		       eglGetError(), display, surface);
+		return;
 	}
 	if (EGL_TRUE == eglQuerySurface(display, surface, EGL_HEIGHT, &value)) {
 		printf("height %d\n", value);
+		height = value;
 	} else {
 		printf("error 0x%x querying height for display %p, surface %p\n\n",
 		       eglGetError(), display, surface);
+		return;
 	}
  
+	if (EGL_TRUE == eglQuerySurface(display, surface, EGL_TEXTURE_FORMAT, &value)) {
+		printf("format %d\n", value);
+	} else {
+		printf("error 0x%x querying format for display %p, surface %p\n",
+		       eglGetError(), display, surface);
+	}
+
+	if (EGL_TRUE == eglQuerySurface(display, surface, EGL_TEXTURE_TARGET, &value)) {
+		printf("type %d\n", value);
+	} else {
+		printf("error 0x%x querying format for display %p, surface %p\n",
+		       eglGetError(), display, surface);
+	}
+
+	unsigned const num_bytes = 320*240*4;
+	unsigned char *data = new unsigned char [320*240*4];
+	memset(data, 0, num_bytes);
+        glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, data);
+ 
+	FILE *fout = fopen("pixels.rgba", "wb");
+	fwrite(data, 1, 320*240*4, fout);
+	fclose(fout);
+
 	eglSwapBuffers(display, surface);
+
+	delete [] data;
 }
 
 void destroySurface() {

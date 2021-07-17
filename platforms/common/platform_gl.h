@@ -58,13 +58,14 @@ extern PFNGLGENVERTEXARRAYSOESPROC glGenVertexArraysOESEXT;
 static void glBindVertexArray(GLuint array) {}
 static void glDeleteVertexArrays(GLsizei n, const GLuint *arrays) {}
 static void glGenVertexArrays(GLsizei n, GLuint *arrays) {}
-inline void * glMapBufferOES(GLenum target, GLenum access) {return 0;}
-inline GLboolean glUnmapBufferOES(GLenum target) { return 0; }
-
+extern "C" {
+GL_APICALL void *GL_APIENTRY glMapBuffer(GLenum target, GLenum access);
+GL_APICALL GLboolean GL_APIENTRY glUnmapBuffer(GLenum target);
+};
 
 #endif // TANGRAM_RPI
 
-#if defined(TANGRAM_ANDROID) || defined(TANGRAM_IOS) || defined(TANGRAM_RPI)
+#if defined(TANGRAM_ANDROID) || defined(TANGRAM_IOS)
     #define glMapBuffer glMapBufferOES
     #define glUnmapBuffer glUnmapBufferOES
 #endif // defined(TANGRAM_ANDROID) || defined(TANGRAM_IOS) || defined(TANGRAM_RPI)
