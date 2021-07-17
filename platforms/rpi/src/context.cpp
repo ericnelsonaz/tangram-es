@@ -27,189 +27,8 @@ struct Viewport {
 };
 Viewport viewport;
 
-#define MOUSE_ID "mouse0"
-static int mouse_fd = -1;
-struct Mouse {
-    float x = 0.f;
-    float y = 0.f;
-    float velX = 0.f;
-    float velY = 0.f;
-    int button = 0;
-};
-static Mouse mouse;
 static bool bRender;
 static unsigned char keyPressed;
-
-// Mouse stuff
-//--------------------------------
-std::string searchForDevice(const std::string& device) {
-    std::ifstream file;
-    std::string buffer;
-    std::string address = "NONE";
-
-    file.open("/proc/bus/input/devices");
-
-    if (!file.is_open()) {
-        return "NOT FOUND";
-    }
-
-    while (!file.eof()) {
-        getline(file, buffer);
-        std::size_t found = buffer.find(device);
-        if (found != std::string::npos) {
-            std::string tmp = buffer.substr(found + device.size() + 1);
-            std::size_t foundBegining = tmp.find("event");
-            if (foundBegining != std::string::npos) {
-                address = "/dev/input/" + tmp.substr(foundBegining);
-                address.erase(address.size() - 1, 1);
-            }
-            break;
-        }
-    }
-
-    file.close();
-    return address;
-}
-
-void closeMouse() {
-    if (mouse_fd > 0) {
-        close(mouse_fd);
-    }
-    mouse_fd = -1;
-}
-
-int initMouse() {
-    closeMouse();
-
-    mouse.x = viewport.width * 0.5;
-    mouse.y = viewport.height * 0.5;
-    std::string mouseAddress = searchForDevice(MOUSE_ID);
-    std::cout << "Mouse [" << mouseAddress << "]" << std::endl;
-    mouse_fd = open(mouseAddress.c_str(), O_RDONLY | O_NONBLOCK);
-
-    return mouse_fd;
-}
-
-bool readMouseEvent(struct input_event *mousee) {
-    int bytes;
-    if (mouse_fd > 0) {
-        bytes = read(mouse_fd, mousee, sizeof(struct input_event));
-        if (bytes == -1) {
-            return false;
-        } else if (bytes == sizeof(struct input_event)) {
-            return true;
-        }
-    }
-    return false;
-}
-
-bool updateMouse() {
-    if (mouse_fd < 0) {
-        return false;
-    }
-
-    struct input_event mousee;
-    while (readMouseEvent(&mousee)) {
-
-        mouse.velX = 0;
-        mouse.velY = 0;
-
-        float x = 0.0f, y = 0.0f;
-        int button = 0;
-
-        switch (mousee.type) {
-            // Update Mouse Event
-            case EV_KEY:
-                switch (mousee.code) {
-                    case BTN_LEFT:
-                        if (mousee.value == 1) {
-                            button = 1;
-                        }
-                        break;
-                    case BTN_RIGHT:
-                        if (mousee.value == 1) {
-                            button = 2;
-                        }
-                        break;
-                    case BTN_MIDDLE:
-                        if (mousee.value == 1) {
-                            button = 3;
-                        }
-                        break;
-                    default:
-                        button = 0;
-                        break;
-                }
-                if (button != mouse.button) {
-                    mouse.button = button;
-                    if (mouse.button == 0) {
-                        onMouseRelease(mouse.x, mouse.y);
-                    } else {
-                        onMouseClick(mouse.x, mouse.y, mouse.button);
-                    }
-                }
-                break;
-            case EV_REL:
-                switch (mousee.code) {
-                    case REL_X:
-                        mouse.velX = mousee.value;
-                        break;
-                    case REL_Y:
-                        mousee.value = mousee.value * -1;
-                        mouse.velY = mousee.value;
-                        break;
-                    // case REL_WHEEL:
-                    //     if (mousee.value > 0)
-                    //         std::cout << "Mouse wheel Forward" << std::endl;
-                    //     else if(mousee.value < 0)
-                    //         std::cout << "Mouse wheel Backward" << std::endl;
-                    //     break;
-                    default:
-                        break;
-                }
-                mouse.x += mouse.velX;
-                mouse.y += mouse.velY;
-
-                // Clamp values
-                if (mouse.x < 0) { mouse.x = 0; }
-                if (mouse.y < 0) { mouse.y = 0; }
-                if (mouse.x > viewport.width) { mouse.x = viewport.width; }
-                if (mouse.y > viewport.height) { mouse.y = viewport.height; }
-
-                if (mouse.button != 0) {
-                    onMouseDrag(mouse.x, mouse.y, mouse.button);
-                } else {
-                    onMouseMove(mouse.x, mouse.y);
-                }
-                break;
-            case EV_ABS:
-                switch (mousee.code) {
-                    case ABS_X:
-                        x = ((float)mousee.value / 4095.0f) * viewport.width;
-                        mouse.velX = x - mouse.x;
-                        mouse.x = x;
-                        break;
-                    case ABS_Y:
-                        y = (1.0 - ((float)mousee.value / 4095.0f)) * viewport.height;
-                        mouse.velY = y - mouse.y;
-                        mouse.y = y;
-                        break;
-                    default:
-                        break;
-                }
-                if (mouse.button != 0) {
-                    onMouseDrag(mouse.x, mouse.y, mouse.button);
-                } else {
-                    onMouseMove(mouse.x, mouse.y);
-                }
-                break;
-            default:
-                break;
-        }
-    }
-    return true;
-}
-
 
 #define CSHOW(att) res = eglGetConfigAttrib(d,c,att,&val); 		\
 			if (EGL_TRUE == res) {				\
@@ -392,8 +211,6 @@ void createSurface(int x, int y, int width, int height) {
 	
 	setWindowSize(viewport.width, viewport.height);
 	check();
-	
-	initMouse();
 }
 
 void swapSurface(unsigned char *fb) {
@@ -446,7 +263,6 @@ void swapSurface(unsigned char *fb) {
 
 void destroySurface() {
     printf("%s\n", __func__);
-    closeMouse();
     eglSwapBuffers(display, surface);
 
     // Release OpenGL resources
@@ -481,8 +297,6 @@ int getKey() {
 }
 
 void pollInput() {
-    updateMouse();
-
     int key = getKey();
     if (key != -1 && key != keyPressed){
         onKeyPress(key);
@@ -504,26 +318,6 @@ int getWindowWidth(){
 
 int getWindowHeight(){
 	return 320;
-}
-
-float getMouseX(){
-    return mouse.x;
-}
-
-float getMouseY(){
-    return mouse.y;
-}
-
-float getMouseVelX(){
-    return mouse.velX;
-}
-
-float getMouseVelY(){
-    return mouse.velY;
-}
-
-int getMouseButton(){
-    return mouse.button;
 }
 
 unsigned char getKeyPressed(){

@@ -246,41 +246,6 @@ void onKeyPress(int _key) {
     setRenderRequest(true);
 }
 
-void onMouseMove(float _x, float _y) {
-    setRenderRequest(true);
-}
-
-void onMouseClick(float _x, float _y, int _button) {
-    setRenderRequest(true);
-}
-
-void onMouseDrag(float _x, float _y, int _button) {
-    if( _button == 1 ){
-
-        map->handlePanGesture(_x - getMouseVelX(), _y + getMouseVelY(), _x, _y);
-
-    } else if( _button == 2 ){
-        if ( getKeyPressed() == 'r') {
-            float scale = -0.05;
-            float rot = atan2(getMouseVelY(),getMouseVelX());
-            if( _x < getWindowWidth()/2.0 ) {
-                scale *= -1.0;
-            }
-            map->handleRotateGesture(getWindowWidth()/2.0, getWindowHeight()/2.0, rot*scale);
-        } else if ( getKeyPressed() == 't') {
-            map->handleShoveGesture(getMouseVelY()*0.005);
-        } else {
-            map->handlePinchGesture(getWindowWidth()/2.0, getWindowHeight()/2.0, 1.0 + getMouseVelY()*0.001, 0.f);
-        }
-
-    }
-    setRenderRequest(true);
-}
-
-void onMouseRelease(float _x, float _y) {
-    setRenderRequest(true);
-}
-
 void onViewportResize(int _newWidth, int _newHeight) {
     setRenderRequest(true);
 }
