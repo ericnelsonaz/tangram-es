@@ -234,7 +234,6 @@ MapState Map::update(float _dt) {
 
     if (!scene.completeScene(impl->view)) {
         state |= MapState::scene_loading;
-
     } else {
         impl->view.update();
 
@@ -260,6 +259,7 @@ MapState Map::update(float _dt) {
 
 void Map::render() {
 
+    printf("%s\n", __func__);
     auto& scene = *impl->scene;
     auto& view = impl->view;
     auto& renderState = impl->renderState;
@@ -287,6 +287,7 @@ void Map::render() {
     Primitives::setResolution(renderState, view.getWidth(), view.getHeight());
     FrameInfo::beginFrame();
 
+    printf("%s: renderBegin\n", __func__);
     scene.renderBeginFrame(renderState);
 
     // Render feature selection pass to offscreen framebuffer
@@ -306,24 +307,31 @@ void Map::render() {
     // Get background color for frame based on zoom level, if there are stops
     impl->background = scene.backgroundColor(view.getIntegerZoom());
 
+    printf("%s: FrameBuffer::apply\n", __func__);
     // Setup default framebuffer for a new frame
     FrameBuffer::apply(renderState, renderState.defaultFrameBuffer(),
                        viewport, impl->background.toColorF());
+    printf("%s: FrameBuffer::apply done\n", __func__);
 
     if (drawSelectionDebug) {
+        printf("%s: drawSelectionDebug\n", __func__);
         impl->selectionBuffer->drawDebug(renderState, viewport);
         FrameInfo::draw(renderState, view, *scene.tileManager());
         return;
     }
 
+    printf("%s: render\n", __func__);
     // Render scene
     bool drawnAnimatedStyle = scene.render(renderState, view);
+    printf("%s: render done\n", __func__);
 
     if (scene.animated() != Scene::animate::no &&
+        printf("%s: animated\n", __func__);
         drawnAnimatedStyle != platform->isContinuousRendering()) {
         platform->setContinuousRendering(drawnAnimatedStyle);
     }
 
+    printf("%s: FrameInfo::draw\n", __func__);
     FrameInfo::draw(renderState, view, *scene.tileManager());
 }
 
