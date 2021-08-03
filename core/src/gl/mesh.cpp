@@ -93,10 +93,6 @@ void MeshBase::subDataUpload(RenderState& rs, GLbyte* _data) {
     if (Hardware::supportsMapBuffer) {
         GLvoid* dataStore = GL::mapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
 
-	if (!dataStore) {
-		printf("Error mapping GL buffer!\n");
-		exit(1);
-	}
         // write memory client side
         std::memcpy(dataStore, data, vertexBytes);
 
