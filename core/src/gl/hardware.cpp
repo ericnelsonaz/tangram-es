@@ -59,6 +59,7 @@ void loadExtensions() {
 
     LOG("Driver supports map buffer: %d", supportsMapBuffer);
     LOG("Driver supports vaos: %d", supportsVAOs);
+    LOG("--- skip vao support\n"); supportsVAOs = false;
     LOG("Driver supports rgb8_rgba8: %d", supportsGLRGBA8OES);
     LOG("Driver supports NPOT texture: %d", supportsTextureNPOT);
 
@@ -76,6 +77,9 @@ void loadCapabilities() {
 
     LOG("Hardware max texture size %d", maxTextureSize);
     LOG("Hardware max combined texture units %d", maxCombinedTextureUnits);
+    LOG("--------force 2048/8\n");
+    maxTextureSize = 2048;
+    maxCombinedTextureUnits = 8;
 }
 
 }
