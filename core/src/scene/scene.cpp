@@ -541,6 +541,7 @@ void Scene::renderBeginFrame(RenderState& _rs) {
 bool Scene::render(RenderState& _rs, View& _view) {
 
     bool drawnAnimatedStyle = false;
+    long long tick = tickMs();
     for (const auto& style : m_styles) {
 
         bool styleDrawn = style->draw(_rs, _view,
@@ -548,6 +549,9 @@ bool Scene::render(RenderState& _rs, View& _view) {
                                       m_markerManager->markers());
 
         drawnAnimatedStyle |= (styleDrawn && style->isAnimated());
+        printf("render %s: %lld ms\n",
+               style->getName().c_str(),
+               tickMs()-tick); tick = tickMs();
     }
     return drawnAnimatedStyle;
 }
