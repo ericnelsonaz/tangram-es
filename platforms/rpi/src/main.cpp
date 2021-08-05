@@ -142,17 +142,15 @@ int main(int argc, char **argv) {
     }
 
     // Resolve the scene file URL against the current directory.
-    Url baseUrl("file:///home/root/");
+    Url baseUrl("file:///");
     char pathBuffer[PATH_MAX] = {0};
     if (getcwd(pathBuffer, PATH_MAX) != nullptr) {
-        baseUrl = Url(std::string(pathBuffer) + "/").resolve(baseUrl);
+        baseUrl = baseUrl.resolve(Url(std::string(pathBuffer) + "/"));
     }
 
     LOG("Base URL: %s", baseUrl.string().c_str());
 
     Url sceneUrl = baseUrl.resolve(Url(options.sceneFilePath));
-
-    LOG("Scene URL: %s", sceneUrl.string().c_str());
 
     map = std::make_unique<Map>(std::make_unique<RpiPlatform>(urlClientOptions));
     map->loadScene(sceneUrl.string(), !options.hasLocationSet, updates);
@@ -194,59 +192,13 @@ int main(int argc, char **argv) {
         return -1;
     }
 
-    double dt = 0.0;
-    char inBuf[80];
     while (bUpdate) {
-        printf("cmds: "); fflush(stdout);
-        if (fgets(inBuf, sizeof(inBuf), stdin)) {
-            int i;
-            for(i=0; inBuf[i]; i++) {
-                switch (inBuf[i]) {
-                    case '>':
-                        map->handlePanGesture(0.0, 0.0, -100.0, 0.0);
-                        break;
-                    case '<':
-                        map->handlePanGesture(0.0, 0.0, 100.0, 0.0);
-                        break;
-                    case '^':
-                        map->handlePanGesture(0.0, 0.0, 0.0, 100.0);
-                        break;
-                    case 'v':
-                    case 'V':
-                        map->handlePanGesture(0.0, 0.0, 0.0, -100.0);
-                        break;
-                    case '/':
-                        map->handleRotateGesture(0.0, 0.0, 0.1);
-                        break;
-                    case '\\':
-                        map->handleRotateGesture(0.0, 0.0, -0.1);
-                        break;
-                    case '-':
-                        map->setZoom(map->getZoom() - 1.0f);
-                        break;
-                    case '+':
-                        map->setZoom(map->getZoom() + 1.0f);
-                        break;
-                    case '.':
-                        setRenderRequest(true);
-                        break;
-                    case '\n':
-                        break;
-                    default:
-                        printf("unknown navigation char 0x%02x\n", inBuf[i]);
-                }
-            }
-        } else {
-            break;
-        }
-        dt = timer.deltaSeconds();
+        pollInput();
+        double dt = timer.deltaSeconds();
         if (getRenderRequest() || map->getPlatform().isContinuousRendering() ) {
             setRenderRequest(false);
-            printf("update\n");
             map->update(dt);
-            printf("render\n");
             map->render();
-            printf("swap\n");
             swapSurface(fbmem);
         }
     }
