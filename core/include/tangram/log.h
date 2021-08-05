@@ -4,6 +4,18 @@
 
 #include <atomic>
 #include <cstring>
+#include <sys/time.h>
+
+inline long long timeValToMs(struct timeval const &tv)
+{
+   return ((long long)tv.tv_sec*1000)+((long long)tv.tv_usec / 1000);
+}
+
+inline long long tickMs(void)
+{
+   struct timeval now ; gettimeofday(&now, 0);
+   return timeValToMs(now);
+}
 
 /*
  * Log utilities:
