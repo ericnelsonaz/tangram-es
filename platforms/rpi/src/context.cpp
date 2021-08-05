@@ -395,22 +395,19 @@ void createSurface(int x, int y, int width, int height) {
 }
 
 void swapSurface(unsigned char *fb) {
-    printf("%s\n", __func__);
-
 	EGLint value;
  	GLsizei width;
  	GLsizei height;
 
 	if (EGL_TRUE == eglQuerySurface(display, surface, EGL_WIDTH, &value)) {
-		printf("width %d\n", value);
 		width = value;
 	} else {
 		printf("error 0x%x querying width for display %p, surface %p\n",
 		       eglGetError(), display, surface);
 		return;
 	}
+
 	if (EGL_TRUE == eglQuerySurface(display, surface, EGL_HEIGHT, &value)) {
-		printf("height %d\n", value);
 		height = value;
 	} else {
 		printf("error 0x%x querying height for display %p, surface %p\n\n",
@@ -419,14 +416,14 @@ void swapSurface(unsigned char *fb) {
 	}
  
 	if (EGL_TRUE == eglQuerySurface(display, surface, EGL_TEXTURE_FORMAT, &value)) {
-		printf("format %d\n", value);
+		;
 	} else {
 		printf("error 0x%x querying format for display %p, surface %p\n",
 		       eglGetError(), display, surface);
 	}
 
 	if (EGL_TRUE == eglQuerySurface(display, surface, EGL_TEXTURE_TARGET, &value)) {
-		printf("type %d\n", value);
+		;
 	} else {
 		printf("error 0x%x querying format for display %p, surface %p\n",
 		       eglGetError(), display, surface);
@@ -434,11 +431,12 @@ void swapSurface(unsigned char *fb) {
 
 	unsigned const num_bytes = 320*240*4;
 	glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, fb);
- 
+
+/* 
 	FILE *fout = fopen("pixels.rgba", "wb");
 	fwrite(fb, 1, 320*240*4, fout);
 	fclose(fout);
-
+*/
 	eglSwapBuffers(display, surface);
 }
 
@@ -473,9 +471,11 @@ int getKey() {
         new_term_attr.c_cc[VMIN] = 0;
         tcsetattr(fileno(stdin), TCSANOW, &new_term_attr);
 
+        printf("reading from stdin\n");
         /* read a character from the stdin stream without blocking */
         /*   returns EOF (-1) if no character is available */
         character = fgetc(stdin);
+        printf("read <%c>:0x%02x\n", character, character);
 
         /* restore the original terminal attributes */
         tcsetattr(fileno(stdin), TCSANOW, &orig_term_attr);
